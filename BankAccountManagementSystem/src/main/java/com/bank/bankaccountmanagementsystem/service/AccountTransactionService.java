@@ -44,7 +44,7 @@ public class AccountTransactionService {
         transaction.setTransactionDate(LocalDateTime.now());
         accountTransactionRepository.save(transaction);
 
-        // Return transaction as DTO
+
         return new AccountTransactionDTO(
                 account.getId().toString(),
                 transaction.getTransactionType(),

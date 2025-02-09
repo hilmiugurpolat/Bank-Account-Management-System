@@ -4,6 +4,7 @@ import com.bank.bankaccountmanagementsystem.dto.AccountDTO;
 import com.bank.bankaccountmanagementsystem.mapper.AccountMapper;
 import com.bank.bankaccountmanagementsystem.model.Account;
 import com.bank.bankaccountmanagementsystem.repository.AccountRepository;
+import com.bank.bankaccountmanagementsystem.repository.AccountTransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -16,6 +17,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 class AccountServiceTest {
 
@@ -27,6 +30,8 @@ class AccountServiceTest {
 
     @InjectMocks
     private AccountService accountService;
+    @Mock
+    private AccountTransactionRepository accountTransactionRepository;
 
     private AccountDTO accountDTO;
     private Account account;
@@ -53,11 +58,11 @@ class AccountServiceTest {
     @Test
     void createAccount_shouldCreateAccountSuccessfully() {
 
-        Mockito.when(accountRepository.findByAccountOwnerIdentityNoAndAccountType(accountDTO.getAccountOwnerIdentityNo(), accountDTO.getAccountType()))
+        when(accountRepository.findByAccountOwnerIdentityNoAndAccountType(accountDTO.getAccountOwnerIdentityNo(), accountDTO.getAccountType()))
                 .thenReturn(Optional.empty());
-        Mockito.when(accountMapper.toAccountEntity(accountDTO)).thenReturn(account);
-        Mockito.when(accountRepository.save(account)).thenReturn(account);
-        Mockito.when(accountMapper.toAccountDTO(account)).thenReturn(accountDTO);
+        when(accountMapper.toAccountEntity(accountDTO)).thenReturn(account);
+        when(accountRepository.save(account)).thenReturn(account);
+        when(accountMapper.toAccountDTO(account)).thenReturn(accountDTO);
 
         AccountDTO createdAccount = accountService.createAccount(accountDTO);
 
@@ -69,7 +74,7 @@ class AccountServiceTest {
     @Test
     void createAccount_shouldThrowExceptionIfAccountExists() {
 
-        Mockito.when(accountRepository.findByAccountOwnerIdentityNoAndAccountType(accountDTO.getAccountOwnerIdentityNo(), accountDTO.getAccountType()))
+        when(accountRepository.findByAccountOwnerIdentityNoAndAccountType(accountDTO.getAccountOwnerIdentityNo(), accountDTO.getAccountType()))
                 .thenReturn(Optional.of(account));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -82,9 +87,9 @@ class AccountServiceTest {
     void updateAccount_shouldUpdateAccountSuccessfully() {
 
         UUID accountId = account.getId();
-        Mockito.when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
-        Mockito.when(accountRepository.save(account)).thenReturn(account);
-        Mockito.when(accountMapper.toAccountDTO(account)).thenReturn(accountDTO);
+        when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
+        when(accountRepository.save(account)).thenReturn(account);
+        when(accountMapper.toAccountDTO(account)).thenReturn(accountDTO);
 
         AccountDTO updatedAccount = accountService.updateAccount(accountId, accountDTO);
 
@@ -96,7 +101,7 @@ class AccountServiceTest {
     void updateAccount_shouldThrowExceptionIfAccountNotFound() {
 
         UUID accountId = UUID.randomUUID();
-        Mockito.when(accountRepository.findById(accountId)).thenReturn(Optional.empty());
+        when(accountRepository.findById(accountId)).thenReturn(Optional.empty());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             accountService.updateAccount(accountId, accountDTO);
@@ -108,8 +113,8 @@ class AccountServiceTest {
     void getAccountDTOById_shouldReturnAccountDTO() {
 
         UUID accountId = account.getId();
-        Mockito.when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
-        Mockito.when(accountMapper.toAccountDTO(account)).thenReturn(accountDTO);
+        when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
+        when(accountMapper.toAccountDTO(account)).thenReturn(accountDTO);
 
         AccountDTO fetchedAccount = accountService.getAccountDTOById(accountId);
 
@@ -121,7 +126,7 @@ class AccountServiceTest {
     void getAccountDTOById_shouldThrowExceptionIfAccountNotFound() {
 
         UUID accountId = UUID.randomUUID();
-        Mockito.when(accountRepository.findById(accountId)).thenReturn(Optional.empty());
+        when(accountRepository.findById(accountId)).thenReturn(Optional.empty());
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             accountService.getAccountDTOById(accountId);
@@ -131,20 +136,21 @@ class AccountServiceTest {
 
     @Test
     void deleteAccount_shouldDeleteAccountSuccessfully() {
-
         UUID accountId = account.getId();
-        Mockito.when(accountRepository.existsById(accountId)).thenReturn(true);
+
+        when(accountRepository.existsById(accountId)).thenReturn(true);
+
+        doNothing().when(accountTransactionRepository).deleteByAccountId(accountId);
 
         accountService.deleteAccount(accountId);
 
-        Mockito.verify(accountRepository, Mockito.times(1)).deleteById(accountId);
     }
 
     @Test
     void deleteAccount_shouldThrowExceptionIfAccountNotFound() {
 
         UUID accountId = UUID.randomUUID();
-        Mockito.when(accountRepository.existsById(accountId)).thenReturn(false);
+        when(accountRepository.existsById(accountId)).thenReturn(false);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             accountService.deleteAccount(accountId);

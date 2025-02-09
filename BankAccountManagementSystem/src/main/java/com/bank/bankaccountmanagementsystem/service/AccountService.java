@@ -4,6 +4,7 @@ import com.bank.bankaccountmanagementsystem.mapper.AccountMapper;
 import com.bank.bankaccountmanagementsystem.dto.AccountDTO;
 import com.bank.bankaccountmanagementsystem.model.Account;
 import com.bank.bankaccountmanagementsystem.repository.AccountRepository;
+import com.bank.bankaccountmanagementsystem.repository.AccountTransactionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
@@ -14,10 +15,12 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
+    private final AccountTransactionRepository accountTransactionRepository;
 
-    public AccountService(AccountRepository accountRepository, AccountMapper accountMapper) {
+    public AccountService(AccountRepository accountRepository, AccountMapper accountMapper,AccountTransactionRepository accountTransactionRepository) {
         this.accountRepository = accountRepository;
         this.accountMapper = accountMapper;
+        this.accountTransactionRepository = accountTransactionRepository;
     }
 
 
@@ -62,6 +65,12 @@ public class AccountService {
         if (!accountRepository.existsById(accountId)) {
             throw new IllegalArgumentException("Account not found: " + accountId);
         }
+
+
+        accountTransactionRepository.deleteByAccountId(accountId);
+
+
         accountRepository.deleteById(accountId);
     }
+
 }
