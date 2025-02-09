@@ -1,0 +1,93 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: hilmi
+      changes:
+        - createTable:
+            tableName: accounts
+            columns:
+              - column:
+                  name: id
+                  type: binary(16)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: account_owner_identity_number
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: account_owner_first_name
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: account_owner_last_name
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: account_type
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: balance
+                  type: decimal(15,2)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 2
+      author: hilmi
+      changes:
+        - createTable:
+            tableName: account_transactions
+            columns:
+              - column:
+                  name: id
+                  type: binary(16)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: account_id
+                  type: binary(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: transaction_date
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: transaction_type
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: decimal(15,2)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 3
+      author: hilmi
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: account_transactions
+            baseColumnNames: account_id
+            constraintName: fk_account_transactions_to_accounts
+            referencedTableName: accounts
+            referencedColumnNames: id
+
+  - changeSet:
+      id: 4
+      author: hilmi
+      changes:
+        - addUniqueConstraint:
+            tableName: accounts
+            columnNames: account_owner_identity_number, account_type
+            constraintName: unique_account_identity_type
